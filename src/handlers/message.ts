@@ -7,3 +7,8 @@ bot.on(":video", async ctx => {
 bot.on(":video_note", async ctx => {
     await ctx.conversation.enter("addMemeVideoNoteConversation")
 })
+
+bot.on(":text", async ctx => {
+    if (!ctx.message) return
+    await ctx.reply(ctx.message.text);
+})

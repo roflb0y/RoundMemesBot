@@ -29,18 +29,22 @@ export async function addMemeVideoNoteConversation(conversation: ChooseMemeConve
     await memeChoice.editMessageText("Downloading video...");
 
     const videoFile = await ctx.getFile();
-    await videoFile.download(`videos/source/${ctx.from?.id}.mp4`);
+    videoFile.download(`videos/source/${ctx.from?.id}.mp4`)
+        .then(async () => {
+            if (!ctx.message) return;
+            if (!ctx.from) return;
 
-    await memeChoice.editMessageText("Processing video...");
+            await memeChoice.editMessageText("Processing video...");
 
-    await convertToSquare(ctx.from.id.toString())
-    const memeResult = await addMeme(ctx.from.id.toString(), memeIndex);
-
-    await memeChoice.deleteMessage();
-    await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
-
-    log.info(`Sent video note to ${ctx.from.id}`);
-
-    utils.deleteVideos(ctx.from.id.toString());
-    return;
-}
+            const convertPath = await convertToSquare(ctx.from.id.toString());
+            const memeResult = await addMeme(ctx.from.id.toString(), memeIndex);
+        
+            await memeChoice.deleteMessage();
+            await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
+            
+            log.info(`Sent video note to ${ctx.from.id}`);
+            
+            utils.deleteVideos(ctx.from.id.toString());
+            return;
+        })
+};

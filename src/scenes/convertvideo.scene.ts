@@ -28,28 +28,33 @@ export async function convertVideoConversation(conversation: ChooseMemeConversat
     // ждем выбора
     const memeChoice = await conversation.waitForCallbackQuery(/^convert_/);
     const memeIndex = memeChoice.callbackQuery.data.split("_")[1];
-    console.log(memeIndex);
     
     await memeChoice.editMessageText("Downloading video...");
 
     const videoFile = await ctx.getFile();
-    await videoFile.download(`videos/source/${ctx.from?.id}.mp4`);
 
-    await memeChoice.editMessageText("Processing video...");
-    const resultPath = await convertToSquare(ctx.from.id.toString());
+    //почему нахуй async await блочит код
+    videoFile.download(`videos/source/${ctx.from?.id}.mp4`)
+    .then(async () => {
+        if (!ctx.message) return;
+        if (!ctx.from) return;
 
-    if (memeIndex === "0") {
-        await memeChoice.deleteMessage();
-        await ctx.replyWithVideoNote(new InputFile(resultPath), { reply_to_message_id: ctx.message.message_id });
-    }
-    else {
-        const memeResult = await addMeme(ctx.from.id.toString(), memeIndex);
-        await memeChoice.deleteMessage();
-        await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
-    }
-
-    log.info(`Sent video note to ${ctx.from.id}`);
-
-    utils.deleteVideos(ctx.from.id.toString());
-    return;
+        await memeChoice.editMessageText("Processing video...");
+        const resultPath = await convertToSquare(ctx.from.id.toString());
+    
+        if (memeIndex === "0") {
+            await memeChoice.deleteMessage();
+            await ctx.replyWithVideoNote(new InputFile(resultPath), { reply_to_message_id: ctx.message.message_id });
+        }
+        else {
+            const memeResult = await addMeme(ctx.from.id.toString(), memeIndex);
+            await memeChoice.deleteMessage();
+            await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
+        }
+            
+        log.info(`Sent video note to ${ctx.from.id}`);
+            
+        utils.deleteVideos(ctx.from.id.toString());
+        return;
+    });
 }

@@ -3,8 +3,8 @@ import * as log from "../logger";
 import { Video } from "grammy/types";
 import * as utils from "../utils";
 
-export async function convertToSquare(filename: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+export function convertToSquare(filename: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
         const filepath = `videos/source/${filename}.mp4`;
         const outputFilepath = `videos/result/${filename}.mp4`
         
@@ -26,7 +26,7 @@ export async function convertToSquare(filename: string): Promise<string> {
 }
 
 export async function addMeme(filename: string, memeIndex: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const filepath = `videos/result/${filename}.mp4`;
         const memeFilepath = `videos/memes/meme_${memeIndex}.mp4`;
         const outputFilepath = `videos/result/${filename}-meme.mp4`
@@ -45,11 +45,5 @@ export async function addMeme(filename: string, memeIndex: string): Promise<stri
             .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); reject(""); })
 
             .save(outputFilepath)
-    })
-}
-
-export async function convertVideoNote(filename: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        resolve("a")
     })
 }
