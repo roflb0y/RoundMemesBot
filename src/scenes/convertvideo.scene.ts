@@ -1,11 +1,9 @@
-import { chooseMemeButtons } from "../replyMarkups/inlineMarkups";
+import { chooseVideoMemeButtons } from "../replyMarkups/inlineMarkups";
 import { ChooseMemeContext, ChooseMemeConversation } from "./interface";
 import { FileFlavor } from "@grammyjs/files";
 import { InputFile } from "grammy";
 
-import { bot } from "../bot";
-import { downloadVideoNote } from "../services/video/downloadVideo";
-import { convertToSquare } from "../services/video/processVideo";
+import { convertToSquare, addMeme } from "../services/video/processVideo";
 import * as log from "../services/logger";
 import * as utils from "../services/utils";
 
@@ -25,10 +23,12 @@ export async function convertVideoConversation(conversation: ChooseMemeConversat
         await ctx.reply("Video is longer than 60 seconds. It will be trimmed.");
     }
 
-    ctx.reply("Would you like to add a meme to your video?", { reply_markup: chooseMemeButtons, reply_to_message_id: ctx.message.message_id });
+    ctx.reply("Would you like to add a meme to your video?", { reply_markup: chooseVideoMemeButtons, reply_to_message_id: ctx.message.message_id });
 
     // ждем выбора
     const memeChoice = await conversation.waitForCallbackQuery(/^convert_/);
+    const memeIndex = memeChoice.callbackQuery.data.split("_")[1];
+    console.log(memeIndex);
     
     await memeChoice.editMessageText("Downloading video...");
 
@@ -36,14 +36,20 @@ export async function convertVideoConversation(conversation: ChooseMemeConversat
     await videoFile.download(`videos/source/${ctx.from?.id}.mp4`);
 
     await memeChoice.editMessageText("Processing video...");
-    const resultPath = await convertToSquare(ctx.from.id.toString(), video);
+    const resultPath = await convertToSquare(ctx.from.id.toString());
 
-    await memeChoice.deleteMessage();
-    await ctx.replyWithVideoNote(new InputFile(resultPath), { reply_to_message_id: ctx.message.message_id });
+    if (memeIndex === "0") {
+        await memeChoice.deleteMessage();
+        await ctx.replyWithVideoNote(new InputFile(resultPath), { reply_to_message_id: ctx.message.message_id });
+    }
+    else {
+        const memeResult = await addMeme(ctx.from.id.toString(), memeIndex);
+        await memeChoice.deleteMessage();
+        await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
+    }
 
     log.info(`Sent video note to ${ctx.from.id}`);
 
-    //await downloadVideoNote()
-
+    utils.deleteVideos(ctx.from.id.toString());
     return;
 }

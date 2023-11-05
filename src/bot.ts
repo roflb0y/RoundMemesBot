@@ -5,7 +5,8 @@ import * as config from "./config";
 import { ChooseMemeContext } from "./scenes/interface";
 import { conversations, createConversation } from "@grammyjs/conversations";
 
-import { convertVideoConversation } from "./scenes/convert.scene";
+import { convertVideoConversation } from "./scenes/convertvideo.scene";
+import { addMemeVideoNoteConversation } from "./scenes/addmemevideonote.scene";
 
 type MyContext = FileFlavor<ChooseMemeContext>;
 
@@ -17,3 +18,4 @@ bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 
 bot.use(createConversation(convertVideoConversation));
+bot.use(createConversation(addMemeVideoNoteConversation));
