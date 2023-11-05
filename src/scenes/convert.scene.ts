@@ -1,7 +1,7 @@
-import { Scenes, deunionize, Context, Input } from "telegraf";
 import { chooseMemeButtons } from "../replyMarkups/inlineMarkups";
-import { message } from "telegraf/filters";
-import { ChooseMemeSession } from "./interface";
+import { ChooseMemeContext, ChooseMemeConversation } from "./interface";
+import { FileFlavor } from "@grammyjs/files";
+import { InputFile } from "grammy";
 
 import { bot } from "../bot";
 import { downloadVideoNote } from "../services/video/downloadVideo";
@@ -9,52 +9,41 @@ import { convertToSquare } from "../services/video/processVideo";
 import * as log from "../services/logger";
 import * as utils from "../services/utils";
 
+export async function convertVideoConversation(conversation: ChooseMemeConversation, ctx: FileFlavor<ChooseMemeContext>) {
+    if (!ctx.message?.video) return;
+    if (!ctx.from) return;
 
-export const ConvertScene = new Scenes.WizardScene<Scenes.WizardContext<ChooseMemeSession>>("CONVERT_SCENE",
-    async ctx => {
-        if (!ctx.has(message("video"))) return;
+    const video = ctx.message.video;
+    const filesize = video.file_size ? video.file_size : 0;
 
-        const filesize = ctx.message.video.file_size ? ctx.message.video.file_size : 0;
+    if (filesize >= 20 * 1024 * 1024 || filesize === 0) {
+        await ctx.reply("File size cannot be bigger than 20MB");
+        return;
+    }
 
-        if (filesize >= 20 * 1024 * 1024) {
-            await ctx.reply("File size cannot be bigger than 20MB");
-            await ctx.scene.leave();
+    if (video.duration > 60) {
+        await ctx.reply("Video is longer than 60 seconds. It will be trimmed.");
+    }
 
-            return;
-        }
+    ctx.reply("Would you like to add a meme to your video?", { reply_markup: chooseMemeButtons, reply_to_message_id: ctx.message.message_id });
 
-        if (ctx.message.video.duration > 60) {
-            await ctx.reply("Video is longer than 60 seconds. It will be trimmed.");
-        }
+    // ждем выбора
+    const memeChoice = await conversation.waitForCallbackQuery(/^convert_/);
+    
+    await memeChoice.editMessageText("Downloading video...");
 
-        ctx.scene.session.video = ctx.message.video;
-        ctx.reply("Would you like to add a meme to your video?", { reply_markup: chooseMemeButtons.reply_markup, reply_to_message_id: ctx.message?.message_id });
-        ctx.wizard.next();
-    },
-    async ctx => {
-        if (!ctx.has("callback_query")) return;
+    const videoFile = await ctx.getFile();
+    await videoFile.download(`videos/source/${ctx.from?.id}.mp4`);
 
-        const video = ctx.scene.session.video;
+    await memeChoice.editMessageText("Processing video...");
+    const resultPath = await convertToSquare(ctx.from.id.toString(), video);
 
-        //console.log(deunionize(ctx.callbackQuery));
-        //console.log(ctx.scene.session.video);
+    await memeChoice.deleteMessage();
+    await ctx.replyWithVideoNote(new InputFile(resultPath), { reply_to_message_id: ctx.message.message_id });
 
-        await ctx.editMessageText("Downloading video");
-        const videofilelink = await bot.telegram.getFileLink(video.file_id);
+    log.info(`Sent video note to ${ctx.from.id}`);
 
-        await downloadVideoNote(videofilelink.toString(), ctx.callbackQuery.from.id.toString());
-        await ctx.editMessageText("Processing video");
+    //await downloadVideoNote()
 
-        const outputPath = await convertToSquare(ctx.callbackQuery.from.id.toString(), ctx.scene.session.video);
-
-        const file = Input.fromLocalFile(outputPath);
-
-        // replyWithVideoNote doesnt work in this shit
-        await bot.telegram.callApi("sendVideoNote", { chat_id: ctx.callbackQuery.from.id, video_note: file });
-        bot.telegram.deleteMessage(ctx.chat?.id ? ctx.chat.id : 0, ctx.callbackQuery.message?.message_id ? ctx.callbackQuery.message.message_id : 0); //бля ну тайпскрипт
-
-        log.info(`VIDEO NOTE SENT TO ${ctx.callbackQuery.from.id}`);
-        utils.deleteVideos(ctx.callbackQuery.from.id.toString());
-
-        await ctx.scene.leave();
-    })
+    return;
+}

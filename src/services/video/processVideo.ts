@@ -1,6 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
-import { Video } from "telegraf/typings/core/types/typegram";
-import * as log from "../logger"
+import * as log from "../logger";
+import { Video } from "grammy/types";
 
 export async function convertToSquare(filename: string, videoProps: Video): Promise<string> {
     return new Promise((resolve, reject) => {

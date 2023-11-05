@@ -1,7 +1,12 @@
-import { Scenes } from "telegraf";
-import { Video } from "telegraf/typings/core/types/typegram";
+import {
+    type Conversation,
+    type ConversationFlavor,
+    conversations,
+    createConversation,
+  } from "@grammyjs/conversations";
 
-// это полный пиздец
-export interface ChooseMemeSession extends Scenes.WizardSessionData {
-	video: Video;
-}
+import { Context } from "grammy/out/context";
+import { FileFlavor } from "@grammyjs/files";
+
+export type ChooseMemeContext = Context & ConversationFlavor;
+export type ChooseMemeConversation = Conversation<ChooseMemeContext & FileFlavor<Context>>;

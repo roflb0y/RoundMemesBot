@@ -1,5 +1,5 @@
 import { bot } from "../bot";
 
-bot.start(async ctx => {
+bot.command("start", async ctx => {
     ctx.reply("sup");
 })

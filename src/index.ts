@@ -4,9 +4,15 @@ import * as log from "./services/logger";
 import "./handlers/message";
 import "./commands/init";
 
-(async () => {
-    bot.launch();
+import { hydrateFiles } from "@grammyjs/files";
 
-    const me = await bot.telegram.getMe();
-    log.info(`Logged as @${me.username}`);
+(async () => {
+    bot.api.config.use(hydrateFiles(bot.token));
+    bot.start();
+
+    await bot.init();
+    log.info(`Logged as @${bot.botInfo.username}`);
 })()
+
+process.once('SIGINT', () => bot.stop());
+process.once('SIGTERM', () => bot.stop());
