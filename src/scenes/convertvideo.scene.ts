@@ -3,9 +3,12 @@ import { ChooseMemeContext, ChooseMemeConversation } from "./interface";
 import { FileFlavor } from "@grammyjs/files";
 import { InputFile } from "grammy";
 
+import { Database } from "../database/database";
 import { convertToSquare, addMeme } from "../services/video/processVideo";
 import * as log from "../services/logger";
 import * as utils from "../services/utils";
+
+const db = new Database();
 
 export async function convertVideoConversation(conversation: ChooseMemeConversation, ctx: FileFlavor<ChooseMemeContext>) {
     if (!ctx.message?.video) return;
@@ -53,6 +56,8 @@ export async function convertVideoConversation(conversation: ChooseMemeConversat
         }
             
         log.info(`Sent video note to ${ctx.from.id}`);
+        const user = await db.getUser(ctx.from.id);
+        if (user) user.addProcess();
             
         utils.deleteVideos(ctx.from.id.toString());
         return;

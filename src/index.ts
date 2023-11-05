@@ -1,7 +1,7 @@
 import { bot } from "./bot";
 import * as log from "./services/logger";
 
-import "./handlers/message";
+import "./handlers/init";
 import "./commands/init";
 
 import { hydrateFiles } from "@grammyjs/files";

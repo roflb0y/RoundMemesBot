@@ -1,6 +1,5 @@
 import ffmpeg from "fluent-ffmpeg";
 import * as log from "../logger";
-import { Video } from "grammy/types";
 import * as utils from "../utils";
 
 export function convertToSquare(filename: string): Promise<string> {

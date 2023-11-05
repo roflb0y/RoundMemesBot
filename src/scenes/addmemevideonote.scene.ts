@@ -3,9 +3,12 @@ import { ChooseMemeContext, ChooseMemeConversation } from "./interface";
 import { FileFlavor } from "@grammyjs/files";
 import { InputFile } from "grammy";
 
+import { Database } from "../database/database";
 import { addMeme, convertToSquare } from "../services/video/processVideo";
 import * as log from "../services/logger";
 import * as utils from "../services/utils";
+
+const db = new Database();
 
 export async function addMemeVideoNoteConversation(conversation: ChooseMemeConversation, ctx: FileFlavor<ChooseMemeContext>) {
     if (!ctx.message?.video_note) return;
@@ -24,7 +27,6 @@ export async function addMemeVideoNoteConversation(conversation: ChooseMemeConve
     // ждем выбора
     const memeChoice = await conversation.waitForCallbackQuery(/^convert_/);
     const memeIndex = memeChoice.callbackQuery.data.split("_")[1];
-    console.log(memeIndex);
     
     await memeChoice.editMessageText("Downloading video...");
 
@@ -43,6 +45,8 @@ export async function addMemeVideoNoteConversation(conversation: ChooseMemeConve
             await ctx.replyWithVideoNote(new InputFile(memeResult), { reply_to_message_id: ctx.message.message_id });
             
             log.info(`Sent video note to ${ctx.from.id}`);
+            const user = await db.getUser(ctx.from.id);
+            if (user) user.addProcess();
             
             utils.deleteVideos(ctx.from.id.toString());
             return;

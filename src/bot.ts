@@ -8,7 +8,7 @@ import { conversations, createConversation } from "@grammyjs/conversations";
 import { convertVideoConversation } from "./scenes/convertvideo.scene";
 import { addMemeVideoNoteConversation } from "./scenes/addmemevideonote.scene";
 
-type MyContext = FileFlavor<ChooseMemeContext>;
+export type MyContext = FileFlavor<ChooseMemeContext>;
 
 export const bot = new Bot<MyContext>(config.DEV_TOKEN);
 
