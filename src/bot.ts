@@ -11,7 +11,5 @@ bot.use(session());
 const stage = new Scenes.Stage([ConvertScene]);
 bot.use(stage.middleware());
 
-
-
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));

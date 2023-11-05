@@ -19,7 +19,7 @@ export const ConvertScene = new Scenes.WizardScene<Scenes.WizardContext<ChooseMe
         if (filesize >= 20 * 1024 * 1024) {
             await ctx.reply("File size cannot be bigger than 20MB");
             await ctx.scene.leave();
-            
+
             return;
         }
 
@@ -36,8 +36,8 @@ export const ConvertScene = new Scenes.WizardScene<Scenes.WizardContext<ChooseMe
 
         const video = ctx.scene.session.video;
 
-        console.log(deunionize(ctx.callbackQuery));
-        console.log(ctx.scene.session.video);
+        //console.log(deunionize(ctx.callbackQuery));
+        //console.log(ctx.scene.session.video);
 
         await ctx.editMessageText("Downloading video");
         const videofilelink = await bot.telegram.getFileLink(video.file_id);
@@ -51,7 +51,7 @@ export const ConvertScene = new Scenes.WizardScene<Scenes.WizardContext<ChooseMe
 
         // replyWithVideoNote doesnt work in this shit
         await bot.telegram.callApi("sendVideoNote", { chat_id: ctx.callbackQuery.from.id, video_note: file });
-        //bot.telegram.deleteMessage(ctx.callbackQuery.message?.chat.id, ctx.message?.message);
+        bot.telegram.deleteMessage(ctx.chat?.id ? ctx.chat.id : 0, ctx.callbackQuery.message?.message_id ? ctx.callbackQuery.message.message_id : 0); //бля ну тайпскрипт
 
         log.info(`VIDEO NOTE SENT TO ${ctx.callbackQuery.from.id}`);
         utils.deleteVideos(ctx.callbackQuery.from.id.toString());
