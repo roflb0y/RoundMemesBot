@@ -1,8 +1,7 @@
 import mysql from "mysql2";
 import * as config from "../config";
 import * as log from "../services/logger";
-
-import { MyContext } from "../bot";
+import { Message } from "grammy/types";
 
 const db = mysql.createConnection({
     host: config.MYSQL_HOST,
@@ -26,25 +25,21 @@ process.on("uncaughtException", (error) => console.log("Uncaught exception:", er
 export class Database {
     db = db;
 
-    addUser(ctx: MyContext): Promise<void> {
+    addUser(message: Message): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            if (!ctx.message) reject();
+            if (!message.from) return;
+            const user = await this.getUser(message.from.id);
+                
+            if (user) resolve();
             else {
-                if (!ctx.from) return;
-                const user = await this.getUser(ctx.from?.id);
-                
-                if (user) resolve();
-                else {
-                    const locale = ctx.from.language_code ? config.LANGUAGES.includes(ctx.from.language_code) ? ctx.from.language_code : "en" : "en";
-                    this.db.query(`INSERT INTO users(user_id, locale) VALUES (?, ?)`, [ctx.from.id, locale], (err, res, fields) => {
-                        if (err) reject(err);
-                        if (res) { log.info(`Inserted new user ${ctx.from?.id}`); resolve() };
-                    })
-                }
-                
+                const locale = message.from.language_code ? config.LANGUAGES.includes(message.from.language_code) ? message.from.language_code : "en" : "en";
+                this.db.query(`INSERT INTO users(user_id, locale) VALUES (?, ?)`, [message.from.id, locale], (err, res, fields) => {
+                    if (err) reject();
+                    if (res) { log.info(`Inserted new user ${message.from?.id}`); resolve() };
+                })
             }
         })
-    };
+    }
 
     getUser(user_id: number): Promise<User | void> {
         return new Promise((resolve, reject) => {

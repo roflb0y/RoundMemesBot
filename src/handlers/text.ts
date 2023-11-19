@@ -9,8 +9,7 @@ bot.hears("💼 My profile", async ctx => {
 
     const user = await db.getUser(ctx.from?.id);
     if (!user) { ctx.reply("Произошла ошибка"); return; }
-
     const timeSinceReg = utils.getTimeSince(user.join_date);
 
-    await ctx.reply(`*💼 Your profile:*\n\n*📱 Processes count:* ${user.processes}\n*🗓 Joined:* ${timeSinceReg}`, { parse_mode: "MarkdownV2" })
+    ctx.reply(`*💼 Your profile:*\n\n*📱 Processes count:* ${user.processes}\n*🗓 Joined:* ${timeSinceReg}`, { parse_mode: "MarkdownV2" })
 })

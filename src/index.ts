@@ -4,10 +4,7 @@ import * as log from "./services/logger";
 import "./handlers/init";
 import "./commands/init";
 
-import { hydrateFiles } from "@grammyjs/files";
-
 (async () => {
-    bot.api.config.use(hydrateFiles(bot.token));
     bot.start();
 
     await bot.init();
