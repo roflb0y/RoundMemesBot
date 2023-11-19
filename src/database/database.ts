@@ -41,14 +41,14 @@ export class Database {
         })
     }
 
-    getUser(user_id: number): Promise<DBUser | void> {
+    getUser(user_id: number): Promise<DBUser | undefined> {
         return new Promise((resolve, reject) => {
             this.db.query(`SELECT * FROM users WHERE user_id = "${user_id.toString()}"`, (err, res, fields) => {
                 if (err) { log.error(err); reject(err); } 
 
                 if (!Array.isArray(res)) return;
 
-                if (res.length === 0) resolve();
+                if (res.length === 0) resolve(undefined);
                 else resolve(new DBUser(res[0]))
             })
         })
@@ -77,8 +77,8 @@ export class DBUser {
         this.processes++;
     }
 
-    setConvertType(type: string): void {
-        db.query(`UPDATE users SET processes = ? WHERE id = ?`, [this.processes + 1, this.id]);
-        this.convert_type = type;
+    setConvertType(convert_type: string): void {
+        db.query(`UPDATE users SET convert_type = ? WHERE id = ?`, [convert_type, this.id], (err, res, fields) => { if (err) log.error(err) });
+        this.convert_type = convert_type;
     }
 }

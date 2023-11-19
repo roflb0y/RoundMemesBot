@@ -1,2 +1,4 @@
 import "./text";
-import "./video"
+import "./video";
+import "./settings_handler";
+import "./process_video";

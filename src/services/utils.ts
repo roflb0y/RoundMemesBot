@@ -12,20 +12,20 @@ export async function download(url: string, path: string): Promise<void> {
     })
 }
 
-export const deleteVideos = (user_id: string) => {
+export const deleteVideos = (filename: string) => {
     fs.readdirSync("./videos/source")
     .forEach(file => {
-        if (file.includes(user_id)) fs.unlinkSync(`./videos/source/${file}`);
+        if (file.includes(filename)) fs.unlinkSync(`./videos/source/${file}`);
     })
 
     fs.readdirSync("./videos/result")
     .forEach(file => {
-        if (file.includes(user_id)) fs.unlinkSync(`./videos/result/${file}`);
+        if (file.includes(filename)) fs.unlinkSync(`./videos/result/${file}`);
     })
 
     fs.readdirSync("./videos/memes")
     .forEach(file => {
-        if (file.includes(user_id)) fs.unlinkSync(`./videos/memes/${file}`);
+        if (file.includes(filename)) fs.unlinkSync(`./videos/memes/${file}`);
     })
 }
 
