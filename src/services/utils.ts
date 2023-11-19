@@ -81,3 +81,8 @@ function numDeclination(num: number, declensions: string[]): string {
     }
     return declensions[2];
 }
+
+export function sourceExists(user_id: number): boolean {
+  const filepath = `./videos/source/${user_id}.mp4`;
+  return fs.existsSync(filepath);
+}

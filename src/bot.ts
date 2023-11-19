@@ -1,4 +1,4 @@
-import { Bot, session, Context } from "grammy";
+import { Bot, session, Context, MemorySessionStorage } from "grammy";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files"
 import * as config from "./config";
 
@@ -14,7 +14,7 @@ export const bot = new Bot<MyContext>(config.DEV_TOKEN);
 
 bot.api.config.use(hydrateFiles(bot.token));
 
-bot.use(session({ initial: () => ({}) }));
+bot.use(session({ initial: () => ({ videoNoteMessage: undefined }), storage: new MemorySessionStorage() }));
 bot.use(conversations());
 
 bot.use(createConversation(convertVideoConversation));
