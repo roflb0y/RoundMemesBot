@@ -1,6 +1,16 @@
 import fs from "fs";
 import path from "path";
 import moment from "moment";
+import request from "request";
+
+export async function download(url: string, path: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        request.get(url)
+            .pipe(fs.createWriteStream(path))
+            .on("finish", resolve)
+            .on("error", reject)
+    })
+}
 
 export const deleteVideos = (user_id: string) => {
     fs.readdirSync("./videos/source")

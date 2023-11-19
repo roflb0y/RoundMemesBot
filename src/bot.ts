@@ -1,21 +1,13 @@
-import { Bot, session, Context } from "grammy";
-import { FileFlavor, hydrateFiles } from "@grammyjs/files"
+import { Telegraf, session, Scenes } from "telegraf";
 import * as config from "./config";
 
-import { ChooseMemeContext } from "./scenes/interface";
-import { conversations, createConversation } from "@grammyjs/conversations";
+import { AddMemeVideoNote } from "./scenes/addmemevideonote.scene";
+import { MySceneSession } from "./scenes/interface";
 
-import { convertVideoConversation } from "./scenes/convertvideo.scene";
-import { addMemeVideoNoteConversation } from "./scenes/addmemevideonote.scene";
+export type MyContext = Scenes.WizardContext<MySceneSession>;
 
-export type MyContext = FileFlavor<ChooseMemeContext>;
+export const bot = new Telegraf<MyContext>(config.DEV_TOKEN);
+bot.use(session());
 
-export const bot = new Bot<MyContext>(config.DEV_TOKEN);
-
-bot.api.config.use(hydrateFiles(bot.token));
-
-bot.use(session({ initial: () => ({}) }));
-bot.use(conversations());
-
-bot.use(createConversation(convertVideoConversation));
-bot.use(createConversation(addMemeVideoNoteConversation));
+const stage = new Scenes.Stage<MyContext>([AddMemeVideoNote]);
+bot.use(stage.middleware());

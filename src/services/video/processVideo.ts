@@ -3,7 +3,7 @@ import * as log from "../logger";
 import * as utils from "../utils";
 
 export function convertToSquare(filename: string): Promise<string> {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         const filepath = `videos/source/${filename}.mp4`;
         const outputFilepath = `videos/result/${filename}.mp4`
         
@@ -17,7 +17,7 @@ export function convertToSquare(filename: string): Promise<string> {
             .size("400x400")
             .videoCodec("libx264")
             .output(outputFilepath)
-            .on("end", () => { log.debug("PROCESS FINISHED"); resolve(outputFilepath); })
+            .on("end", () => { log.debug(`PROCESS FINISHED ${outputFilepath}`); resolve(outputFilepath); })
             .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); reject(""); })
 
             .run()

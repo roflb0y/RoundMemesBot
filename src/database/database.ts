@@ -1,8 +1,7 @@
 import mysql from "mysql2";
 import * as config from "../config";
 import * as log from "../services/logger";
-
-import { MyContext } from "../bot";
+import { Context } from "telegraf";
 
 const db = mysql.createConnection({
     host: config.MYSQL_HOST,
@@ -26,7 +25,7 @@ process.on("uncaughtException", (error) => console.log("Uncaught exception:", er
 export class Database {
     db = db;
 
-    addUser(ctx: MyContext): Promise<void> {
+    addUser(ctx: Context): Promise<void> {
         return new Promise(async (resolve, reject) => {
             if (!ctx.message) reject();
             else {
