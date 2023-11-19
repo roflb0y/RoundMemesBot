@@ -10,5 +10,5 @@ bot.command("start", async ctx => {
 
     log.info(`/start from ${ctx.from.id}`);
     db.addUser(ctx.message);
-    await ctx.reply("Hello", { reply_markup: mainButtons });
+    await ctx.reply("Hello", { reply_markup: mainButtons.reply_markup });
 });

@@ -1,6 +1,10 @@
-import { Keyboard } from "grammy";
+import { Markup } from "telegraf"
 
-export const mainButtons = new Keyboard()
-    .text("💼 My profile")
-    .text("⚙ Settings")
-    .resized()
+export const mainButtons = Markup.keyboard(
+    [
+        [
+            Markup.button.text("💼 My profile"),
+            Markup.button.text("⚙ Settings")
+        ]
+    ]
+).resize()

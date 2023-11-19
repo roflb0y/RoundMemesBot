@@ -1,7 +1,7 @@
 import mysql from "mysql2";
 import * as config from "../config";
 import * as log from "../services/logger";
-import { Message } from "grammy/types";
+import { Message } from "telegraf/typings/core/types/typegram";
 
 const db = mysql.createConnection({
     host: config.MYSQL_HOST,
@@ -33,7 +33,7 @@ export class Database {
             if (user) resolve();
             else {
                 const locale = message.from.language_code ? config.LANGUAGES.includes(message.from.language_code) ? message.from.language_code : "en" : "en";
-                this.db.query(`INSERT INTO users(user_id, locale) VALUES (?, ?)`, [message.from.id, locale], (err, res, fields) => {
+                this.db.query(`INSERT INTO users(user_id, convert_type, locale) VALUES (?, ?, ?)`, [message.from.id, "0", locale], (err, res, fields) => {
                     if (err) reject();
                     if (res) { log.info(`Inserted new user ${message.from?.id}`); resolve() };
                 })
@@ -41,7 +41,7 @@ export class Database {
         })
     }
 
-    getUser(user_id: number): Promise<User | void> {
+    getUser(user_id: number): Promise<DBUser | void> {
         return new Promise((resolve, reject) => {
             this.db.query(`SELECT * FROM users WHERE user_id = "${user_id.toString()}"`, (err, res, fields) => {
                 if (err) { log.error(err); reject(err); } 
@@ -49,16 +49,17 @@ export class Database {
                 if (!Array.isArray(res)) return;
 
                 if (res.length === 0) resolve();
-                else resolve(new User(res[0]))
+                else resolve(new DBUser(res[0]))
             })
         })
     };
 }
 
-export class User {
+export class DBUser {
     id: number;
     user_id: string;
     processes: number;
+    convert_type: string;
     locale: string;
     join_date!: Date;
 
@@ -66,6 +67,7 @@ export class User {
         this.id = user.id;
         this.user_id = user.user_id;
         this.processes = user.processes;
+        this.convert_type = user.convert_type;
         this.locale = user.locale;
         this.join_date = user.join_date;
     }
@@ -73,5 +75,10 @@ export class User {
     addProcess(): void {
         db.query(`UPDATE users SET processes = ? WHERE id = ?`, [this.processes + 1, this.id]);
         this.processes++;
+    }
+
+    setConvertType(type: string): void {
+        db.query(`UPDATE users SET processes = ? WHERE id = ?`, [this.processes + 1, this.id]);
+        this.convert_type = type;
     }
 }

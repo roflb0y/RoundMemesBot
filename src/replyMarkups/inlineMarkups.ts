@@ -1,6 +1,11 @@
-import { InlineKeyboard } from "grammy";
+import { Markup } from "telegraf";
 
-export const chooseVideoMemeButtons = new InlineKeyboard()
-    .text("❌ No meme", "convert_0")
-    .text("💥 Explosion", "convert_1")
-    .text("👽 Monster", "convert_2")
+export const chooseVideoMemeButtons = Markup.inlineKeyboard(
+    [
+        [
+            Markup.button.callback("❌ No meme", "convert_0"),
+            Markup.button.callback("💥 Explosion", "convert_1"),
+            Markup.button.callback("👽 Monster", "convert_2")
+        ]
+    ]
+)

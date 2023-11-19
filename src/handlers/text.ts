@@ -7,9 +7,13 @@ const db = new Database();
 bot.hears("💼 My profile", async ctx => {
     if (!ctx.from) return;
 
-    const user = await db.getUser(ctx.from?.id);
+    const user = await db.getUser(ctx.from.id);
     if (!user) { ctx.reply("Произошла ошибка"); return; }
     const timeSinceReg = utils.getTimeSince(user.join_date);
 
     ctx.reply(`*💼 Your profile:*\n\n*📱 Processes count:* ${user.processes}\n*🗓 Joined:* ${timeSinceReg}`, { parse_mode: "MarkdownV2" })
+})
+
+bot.hears("⚙ Settings", async ctx => {
+    ctx.reply("Settings")
 })
