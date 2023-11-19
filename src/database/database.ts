@@ -10,14 +10,19 @@ const db = mysql.createConnection({
     password: config.MYSQL_PASSWORD
 });
 
-db.connect((err) => {
-    if (err) {
-        log.error("Connection to db failed");
-        log.error(err.message);
-        return;
-    }
-    log.debug("Connected to db");
-});
+function connect() {
+    db.connect((err) => {
+        if (err) {
+            log.error("Connection to db failed");
+            log.error(err.message);
+            return;
+        }
+        log.debug("Connected to db");
+    });
+}
+
+connect();
+setInterval(connect, 60 * 1000 * 60) //reconnect every hour
 
 process.on("unhandledRejection", (error) => console.log("Unhandled rejection:", error));
 process.on("uncaughtException", (error) => console.log("Uncaught exception:", error));
