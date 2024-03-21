@@ -4,11 +4,9 @@ import { bot } from "../bot";
 import { download } from "../services/utils";
 import { addMeme, convertToSquare } from "../services/video/processVideo";
 import { mainButtons } from "../replyMarkups/keyboardMarkups";
-import { Database } from "../database/database";
+import * as db from "../database/database";
 import * as log from "../services/logger";
 import { deleteVideos } from "../services/utils";
-
-const db = new Database();
 
 bot.on(message("video"), async ctx => {
     if (!ctx.message) return;
@@ -22,7 +20,7 @@ bot.on(message("video"), async ctx => {
         return;
     }
 
-    if (user.convert_type !== "0" && ctx.message.video.duration > 55) {
+    if (user.convertType !== "0" && ctx.message.video.duration > 55) {
         ctx.reply("To add meme to a video it needs to be <55 seconds long.", { reply_to_message_id: ctx.message.message_id });
         return;
     }
@@ -41,13 +39,15 @@ bot.on(message("video"), async ctx => {
 
         //у меня с нихуя перестали изменяться сообщения
         //await bot.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, "Converting...");
+        
+        const square_filepath = await convertToSquare(`${ctx.from.id.toString()}_${ctx.message.message_id}`)
 
-        const square_filepath = await convertToSquare(`${ctx.from.id.toString()}_${ctx.message.message_id}`);
+        if (!square_filepath) return;
         let result_filepath;
 
-        if (user.convert_type !== "0") {
+        if (user.convertType !== "0") {
             //await bot.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, "Adding meme...");
-            result_filepath = await addMeme(`${ctx.from.id}_${ctx.message.message_id}`, user.convert_type);
+            result_filepath = await addMeme(`${ctx.from.id}_${ctx.message.message_id}`, user.convertType);
         } 
         else { 
             result_filepath = square_filepath;
@@ -67,15 +67,14 @@ bot.on(message("video"), async ctx => {
 bot.on(message("video_note"), async ctx => {
     if (!ctx.message) return;
     
-    const user = await db.getUser(ctx.from.id);
-    if (!user) return;
+    const user = await db.addUser(ctx.from);
 
-    if (user.convert_type === "0") {
-        ctx.reply("You haven't choose a meme to add. You can do it in the /settings", { reply_to_message_id: ctx.message.message_id });
+    if (user.convertType === "0") {
+        ctx.reply("You haven't selected a meme to add. You can do it in the /settings", { reply_to_message_id: ctx.message.message_id });
         return;
     }
 
-    if (user.convert_type !== "0" && ctx.message.video_note.duration > 55) {
+    if (user.convertType !== "0" && ctx.message.video_note.duration > 55) {
         ctx.reply("To add meme to a video it needs to be <55 seconds long.", { reply_to_message_id: ctx.message.message_id });
         return;
     }
@@ -91,11 +90,16 @@ bot.on(message("video_note"), async ctx => {
         //await bot.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, "Converting...");
 
         const square_filepath = await convertToSquare(`${ctx.from.id.toString()}_${ctx.message.message_id}`);
+
+        if (!square_filepath) {
+            await ctx.reply("error lmao");
+            return;
+        }
         let result_filepath;
 
-        if (user.convert_type !== "0") {
+        if (user.convertType !== "0") {
             //await bot.telegram.editMessageText(msg.chat.id, msg.message_id, undefined, "Adding meme...");
-            result_filepath = await addMeme(`${ctx.from.id}_${ctx.message.message_id}`, user.convert_type);
+            result_filepath = await addMeme(`${ctx.from.id}_${ctx.message.message_id}`, user.convertType);
         } 
         else { 
             result_filepath = square_filepath;

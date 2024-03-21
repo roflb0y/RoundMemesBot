@@ -1,8 +1,6 @@
 import { bot } from "../bot";
 import { settingsButtons } from "../replyMarkups/inlineMarkups";
-import { Database } from "../database/database";
-
-const db = new Database();
+import * as db from "../database/database";
 
 bot.command("settings", async ctx => {
     const user = await db.getUser(ctx.from.id);

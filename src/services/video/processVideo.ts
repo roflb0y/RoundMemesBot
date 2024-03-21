@@ -2,7 +2,7 @@ import ffmpeg from "fluent-ffmpeg";
 import * as log from "../logger";
 import * as utils from "../utils";
 
-export function convertToSquare(filename: string): Promise<string> {
+export function convertToSquare(filename: string): Promise<string | undefined> {
     return new Promise((resolve, reject) => {
         const filepath = `videos/source/${filename}.mp4`;
         const outputFilepath = `videos/result/${filename}.mp4`
@@ -16,9 +16,10 @@ export function convertToSquare(filename: string): Promise<string> {
             .setDuration(60)
             .size("400x400")
             .videoCodec("libx264")
+            .videoBitrate(2000)
             .output(outputFilepath)
             .on("end", () => { log.debug(`PROCESS FINISHED ${outputFilepath}`); resolve(outputFilepath); })
-            .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); reject(""); })
+            .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); resolve(undefined); })
 
             .run()
     })
@@ -40,6 +41,7 @@ export async function addMeme(filename: string, memeIndex: string): Promise<stri
             .inputOptions(['-safe 0'])
             //.output(outputFilepath)
             .videoCodec("libx264")
+            .videoBitrate(2000)
             .on("end", () => { log.debug("MEME ADDED"); resolve(outputFilepath); })
             .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); reject(""); })
 

@@ -1,89 +1,61 @@
-import mysql from "mysql2";
-import * as config from "../config";
+import { User } from "telegraf/typings/core/types/typegram";
+import { DBUser } from "./interface";
+import { MUser } from "./schemas";
 import * as log from "../services/logger";
-import { Message } from "telegraf/typings/core/types/typegram";
 
-const db = mysql.createConnection({
-    host: config.MYSQL_HOST,
-    user: config.MYSQL_USER,
-    database: config.MYSQL_DB,
-    password: config.MYSQL_PASSWORD
-});
+export async function getUser(userId: number): Promise<DBUserClass | undefined> {
+    const user = await MUser.findOne({ userId: userId })
+    if (user === null) return undefined;
 
-function connect() {
-    db.connect((err) => {
-        if (err) {
-            log.error("Connection to db failed");
-            log.error(err.message);
-            return;
-        }
-        log.debug("Connected to db");
-    });
+    return new DBUserClass(user);
 }
 
-connect();
-setInterval(connect, 60 * 1000 * 60) //reconnect every hour
+export async function addUser(tguser: User): Promise<DBUserClass> {
+    const user = await getUser(tguser.id);
 
-process.on("unhandledRejection", (error) => console.log("Unhandled rejection:", error));
-process.on("uncaughtException", (error) => console.log("Uncaught exception:", error));
+    if (user) return user;
+    const res = await new MUser({userId: tguser.id, username: tguser.username, locale: tguser.language_code}).save();
+    log.db(`Inserted new user ${tguser.username}(${tguser.id})`);
 
-export class Database {
-    db = db;
+    console.log(res);
 
-    addUser(message: Message): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            if (!message.from) return;
-            const user = await this.getUser(message.from.id);
-                
-            if (user) resolve();
-            else {
-                const locale = message.from.language_code ? config.LANGUAGES.includes(message.from.language_code) ? message.from.language_code : "en" : "en";
-                this.db.query(`INSERT INTO users(user_id, convert_type, locale) VALUES (?, ?, ?)`, [message.from.id, "0", locale], (err, res, fields) => {
-                    if (err) reject();
-                    if (res) { log.info(`Inserted new user ${message.from?.id}`); resolve() };
-                })
-            }
-        })
-    }
-
-    getUser(user_id: number): Promise<DBUser | undefined> {
-        return new Promise((resolve, reject) => {
-            this.db.query(`SELECT * FROM users WHERE user_id = "${user_id.toString()}"`, (err, res, fields) => {
-                if (err) { log.error(err); reject(err); } 
-
-                if (!Array.isArray(res)) return;
-
-                if (res.length === 0) resolve(undefined);
-                else resolve(new DBUser(res[0]))
-            })
-        })
-    };
+    return new DBUserClass(res);
 }
 
-export class DBUser {
-    id: number;
-    user_id: string;
-    processes: number;
-    convert_type: string;
-    locale: string;
-    join_date!: Date;
+export class DBUserClass {
+    userId: number
+    username: string
+    locale: string
+    processesCount: number
+    convertType: string
+    joinedAt: Date
+    isBanned: boolean
 
-    constructor(user: any) {
-        this.id = user.id;
-        this.user_id = user.user_id;
-        this.processes = user.processes;
-        this.convert_type = user.convert_type;
+    constructor(user: DBUser) {
+        this.username = user.username;
+        this.userId = user.userId;
+        this.processesCount = user.processesCount;
+        this.convertType = user.convertType;
         this.locale = user.locale;
-        this.join_date = user.join_date;
+        this.joinedAt = user.joinedAt;
+        this.isBanned = user.isBanned;
+    };
+
+    async addProcess(): Promise<void> {
+        await MUser.findOneAndUpdate({ userId: this.userId }, { "processesCount": this.processesCount + 1 }, { "returnDocument": "after" });
+        log.db(`processesCount SET TO ${this.processesCount + 1} FOR ${this.username}(${this.userId})`)
+        this.processesCount++;
     }
 
-    addProcess(): void {
-        db.query(`UPDATE users SET processes = ? WHERE id = ?`, [this.processes + 1, this.id]);
-        this.processes++;
+    async setConvertType(convert_type: string): Promise<void> {
+        await MUser.findOneAndUpdate({ userId: this.userId }, { "convertType": convert_type }, { "returnDocument": "after" });
+        log.db(`convertType SET TO ${convert_type} FOR ${this.username}(${this.userId})`)
+        this.convertType = convert_type;
     }
 
-    setConvertType(convert_type: string): void {
-        db.query(`UPDATE users SET convert_type = ? WHERE id = ?`, [convert_type, this.id], (err, res, fields) => { if (err) log.error(err) });
-        this.convert_type = convert_type;
+    async setBanned(status: boolean): Promise<void> {
+        await MUser.findOneAndUpdate({ userId: this.userId }, { "isBanned": status }, { "returnDocument": "after" });
+        log.db(`SET BAN STATUS TO ${status} FOR ${this.username}(${this.userId})`)
+        this.isBanned = status;
     }
 }
