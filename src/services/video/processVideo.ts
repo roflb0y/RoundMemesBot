@@ -17,6 +17,9 @@ export function convertToSquare(filename: string): Promise<string | undefined> {
             .size("400x400")
             .videoCodec("libx264")
             .videoBitrate(2000)
+            .audioCodec("aac")
+            .audioBitrate(128)
+            .addOutputOption(["-ar", "48000"])
             .output(outputFilepath)
             .on("end", () => { log.debug(`PROCESS FINISHED ${outputFilepath}`); resolve(outputFilepath); })
             .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); resolve(undefined); })
@@ -42,6 +45,8 @@ export async function addMeme(filename: string, memeIndex: string): Promise<stri
             //.output(outputFilepath)
             .videoCodec("libx264")
             .videoBitrate(2000)
+            .audioCodec("aac")
+            .audioBitrate(128)
             .on("end", () => { log.debug("MEME ADDED"); resolve(outputFilepath); })
             .on("error", (error: Error) => { log.error(`There has been an error while processing ${filepath}\n${error.message}`); reject(""); })
 
