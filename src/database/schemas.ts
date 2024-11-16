@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
 
-const users = new mongoose.Schema({
+const usersSchema = new mongoose.Schema({
     userId: {
         type: Number,
-        unique: true,
         default: 0
     },
 
@@ -23,13 +22,13 @@ const users = new mongoose.Schema({
     },
 
     convertType: {
-        type: String,
-        default: "0"
+        type: Number,
+        default: 0
     },
 
     joinedAt: {
         type: Date,
-        default: () => new Date().setHours(new Date().getHours())
+        default: () => new Date()
     },
 
     isBanned: {
@@ -38,4 +37,28 @@ const users = new mongoose.Schema({
     }
 });
 
-export const MUser = mongoose.model("users", users);
+const processesSchema = new mongoose.Schema({
+    user: {
+        type: Number,
+        required: true
+    },
+
+    convertType: {
+        type: Number,
+        required: true
+    },
+
+    processTime: {
+        type: Number,
+        required: true
+    },
+
+    date: {
+        type: Date,
+        required: true,
+        default: () => new Date()
+    }
+});
+
+export const User = mongoose.model("users", usersSchema);
+export const Process = mongoose.model("processes", processesSchema);

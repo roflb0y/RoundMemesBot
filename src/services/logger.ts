@@ -13,5 +13,5 @@ export const error = (msg: any) => {
 }
 
 export const db = (msg: any) => {
-    console.log(chalk.yellow(`[${new Date().toLocaleString()}] DATABASE OPERATION: ${msg}`))
+    console.log(chalk.yellow(`[${new Date().toLocaleString()}] DATABASE: ${msg}`))
 }

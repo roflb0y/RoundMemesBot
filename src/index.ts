@@ -2,7 +2,9 @@ import { bot } from "./bot";
 import * as config from "./config";
 import * as log from "./services/logger";
 import mongoose from "mongoose";
-import user from "./middlewares/user"
+
+process.on("uncaughtException", (err) => { log.error(err) });
+process.on("unhandledRejection", (err) => { log.error(err) });
 
 import "./handlers/init";
 import "./commands/init";
